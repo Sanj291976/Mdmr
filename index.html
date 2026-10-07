@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7a1f1f">
+<title>DWCCS Rice Manager</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--red:#7a1f1f;--red2:#a93636;--gold:#ffc83d;--green:#16834b;--bg:#f4f5f7;--card:#fff;--muted:#70757d;--line:#e7e8eb}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#202124;padding-bottom:86px}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.top{background:linear-gradient(145deg,var(--red),var(--red2));color:#fff;padding:18px 16px 22px;border-radius:0 0 24px 24px;box-shadow:0 5px 18px #0002}
+.toprow{display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:1.18rem;font-weight:800}.sub{font-size:.73rem;opacity:.8;margin-top:3px}
+.iconbtn{width:40px;height:40px;border:1px solid #ffffff33;border-radius:12px;background:#ffffff18;color:#fff;font-size:1.15rem}
+.period{margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.period strong{font-size:1.35rem}.badge{background:#4caf50;padding:4px 8px;border-radius:7px;font-size:.62rem;font-weight:800}
+.controls{padding:12px 14px 2px;display:flex;gap:8px;overflow:auto}
+.year{background:#fff;border:1.5px solid var(--red);color:var(--red);border-radius:12px;padding:9px 11px;font-weight:800;outline:none}
+.q{display:flex;gap:7px;min-width:max-content}
+.q button{border:0;background:#e9eaed;color:#555;padding:9px 13px;border-radius:20px;font-size:.75rem;font-weight:800}
+.q button.active{background:var(--red);color:#fff}
+.dashboard{padding:10px 14px}
+.progress{background:#fff;border-radius:16px;padding:14px;box-shadow:0 2px 8px #0000000c}
+.progressrow{display:flex;justify-content:space-between;font-size:.78rem;font-weight:800}.progressrow span{color:var(--red)}
+.bar{height:8px;background:#eceef0;border-radius:8px;margin-top:9px;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),#d65b5b);border-radius:8px;transition:.3s}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}
+.stat{background:#fff;border-radius:15px;padding:12px 7px;text-align:center;box-shadow:0 2px 8px #0000000b}.stat b{display:block;font-size:1rem}.stat small{font-size:.58rem;color:var(--muted);font-weight:800;text-transform:uppercase}.stat:nth-child(3) b{color:#b51f28}
+.toolbar{padding:10px 14px;display:flex;gap:8px}
+.search{flex:1;position:relative}.search input{width:100%;height:43px;border:0;border-radius:13px;padding:0 14px 0 38px;background:#fff;outline:none;box-shadow:0 2px 8px #0000000a}.search:before{content:"⌕";position:absolute;z-index:1;left:13px;top:9px;font-size:1.15rem;color:#888}
+.action{height:43px;border:0;border-radius:13px;padding:0 13px;font-weight:800;background:#fff;color:var(--red);box-shadow:0 2px 8px #0000000a}
+.action.edit{background:#eaf1ff;color:#1756a8}.action.save{background:#e7f7ee;color:var(--green)}
+.tabs{margin:0 14px 10px;background:#e8e9ec;padding:4px;border-radius:13px;display:flex}.tab{flex:1;border:0;padding:9px;border-radius:10px;background:transparent;color:#666;font-weight:800;font-size:.78rem}.tab.active{background:#fff;color:var(--red);box-shadow:0 1px 4px #0002}
+.list{padding:0 14px}.school{background:#fff;border-radius:16px;margin-bottom:9px;padding:13px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 8px #0000000a;border-left:4px solid transparent}.school.taken{background:#effaf3;border-left-color:var(--green)}
+.num{width:25px;color:#999;font-weight:800;font-size:.72rem;text-align:center}.info{flex:1;min-width:0}.name{font-size:.83rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.details{margin-top:5px;color:#73777e;font-size:.68rem}.details b{color:#444}
+.check{width:38px;height:38px;border-radius:50%;border:2px solid #d1d4d8;background:#fff;color:transparent;display:grid;place-items:center;font-weight:900;font-size:1.05rem;flex-shrink:0}.check.checked{background:var(--green);border-color:var(--green);color:#fff}
+.editbox{display:none;gap:7px;margin-top:8px}.editing .details{display:none}.editing .editbox{display:flex}.editbox input{width:50%;padding:8px;border:1.5px solid #a9c5ed;border-radius:9px;background:#f5f9ff;text-align:center;outline:none;font-size:.8rem}
+.empty{text-align:center;padding:50px 20px;color:#999}.empty b{display:block;color:#555;margin-bottom:5px}
+.bottom{position:fixed;bottom:0;left:0;right:0;height:70px;background:#fff;border-top:1px solid var(--line);display:flex;z-index:20;box-shadow:0 -4px 15px #0000000b}.bottom button{flex:1;border:0;background:#fff;color:#777;font-size:.68rem;font-weight:800}.bottom button span{display:block;font-size:1.25rem;margin-bottom:3px}.bottom button.active{color:var(--red)}
+.toast{position:fixed;z-index:99;left:50%;bottom:82px;transform:translate(-50%,20px);background:#202124;color:#fff;padding:10px 18px;border-radius:25px;font-size:.76rem;font-weight:800;opacity:0;pointer-events:none;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;z-index:50}.modal.show{display:flex}.sheet{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:18px;max-height:80vh;overflow:auto}.sheet h2{font-size:1rem;margin-bottom:12px}.sheet p{font-size:.76rem;color:#666;line-height:1.5}.sheet .row{display:flex;gap:8px;margin-top:14px}.sheet button{flex:1;border:0;border-radius:12px;padding:11px;font-weight:800}.danger{background:#fff0f0;color:#b51f28}.primary{background:var(--red);color:#fff}.sheet textarea{width:100%;height:210px;margin-top:12px;border:1.5px solid #c9cdd3;border-radius:12px;padding:11px;font-size:.82rem;line-height:1.45;resize:vertical;outline:none;background:#fafbfc}.sheet textarea:focus{border-color:#7a1f1f;background:#fff}.pastecount{margin-top:7px;font-size:.7rem;color:#777;font-weight:700}
+.capture-mode .controls,.capture-mode .tabs,.capture-mode .toolbar,.capture-mode .bottom,.capture-mode .iconbtn{display:none!important}
+.capture-mode{padding-bottom:4px;background:#fff}
+.capture-mode .top{border-radius:0;padding:8px 10px 9px;box-shadow:none}
+.capture-mode .brand{font-size:.8rem}
+.capture-mode .sub{font-size:.48rem}
+.capture-mode .period{margin-top:5px}
+.capture-mode .period strong{font-size:.82rem}
+.capture-mode .badge{font-size:.45rem;padding:2px 4px}
+.capture-mode .dashboard{padding:5px 8px}
+.capture-mode .progress{padding:6px 8px;border-radius:8px;box-shadow:none}
+.capture-mode .progressrow{font-size:.52rem}
+.capture-mode .bar{height:4px;margin-top:4px}
+.capture-mode .stats{gap:4px;margin-top:4px}
+.capture-mode .stat{padding:5px 3px;border-radius:7px;box-shadow:none}
+.capture-mode .stat b{font-size:.65rem}
+.capture-mode .stat small{font-size:.4rem}
+.capture-mode .list{padding:0 8px}
+.capture-mode .school{border-radius:5px;margin-bottom:2px;padding:4px 5px;gap:4px;box-shadow:none;border-left-width:2px}
+.capture-mode .num{width:15px;font-size:.48rem}
+.capture-mode .name{font-size:.52rem}
+.capture-mode .details{margin-top:1px;font-size:.43rem}
+.capture-mode .check{width:17px;height:17px;border-width:1px;font-size:.55rem}
+.capture-mode .editbox{display:none!important}
+.capture-mode .list{padding-bottom:10px}
+.capture-mode .name{white-space:normal}
+@media(min-width:700px){body{max-width:700px;margin:auto}.bottom{max-width:700px;left:50%;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+<div id="captureArea">
+<header class="top">
+  <div class="toprow">
+    <div><div class="brand">DWCCS Rice Manager</div><div class="sub">Rice distribution & collection tracker</div></div>
+    <button class="iconbtn" onclick="openInfo()">ⓘ</button>
+  </div>
+  <div class="period"><div><div class="sub">CURRENT PERIOD</div><strong id="period">Loading...</strong></div><span class="badge">AUTO</span></div>
+</header>
+
+<section class="controls">
+  <select class="year" id="year" onchange="setYear(this.value)">
+    
+  </select>
+  <div class="q" id="quarters">
+    <button data-q="Q1" onclick="setQ('Q1')">JAN–MAR</button>
+    <button data-q="Q2" onclick="setQ('Q2')">APR–JUN</button>
+    <button data-q="Q3" onclick="setQ('Q3')">JUL–SEP</button>
+    <button data-q="Q4" onclick="setQ('Q4')">OCT–DEC</button>
+  </div>
+</section>
+
+<section class="dashboard">
+  <div class="progress">
+    <div class="progressrow"><span id="count">0 of 0 collected</span><span id="pct">0%</span></div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="allotted">0.000</b><small>Allotted</small></div>
+    <div class="stat"><b id="collected">0.000</b><small>Collected</small></div>
+    <div class="stat"><b id="remaining">0.000</b><small>Remaining</small></div>
+  </div>
+</section>
+
+<div class="tabs">
+  <button class="tab active" id="lpTab" onclick="setTab('lp')">LP · 47</button>
+  <button class="tab" id="upTab" onclick="setTab('up')">UP · 25</button>
+</div>
+
+<div class="toolbar">
+  <div class="search"><input id="search" placeholder="Search school..." oninput="render()"></div>
+  <button class="action edit" id="editBtn" onclick="toggleEdit()">✏️ Edit</button><button class="action" onclick="openPaste()">📋 Paste All</button><button class="action" onclick="saveAsImage()">📸 Image</button>
+</div>
+
+<main class="list" id="list"></main>
+
+</div>
+<nav class="bottom">
+  <button class="active"><span>▣</span>Tracker</button>
+  <button onclick="openInfo()"><span>ⓘ</span>About</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeInfo()">
+  <div class="sheet">
+    <h2>DWCCS Rice Manager</h2>
+    <p>Track school-wise rice allotment and collection for each quarter. Data is stored locally on this device, so it remains available offline in the same browser.</p>
+    <div class="row"><button class="danger" onclick="clearCurrent()">Reset Current Quarter</button><button class="primary" onclick="closeInfo()">Close</button></div>
+  </div>
+</div>
+<div class="modal" id="pasteModal" onclick="if(event.target===this)closePaste()">
+  <div class="sheet">
+    <h2>📋 Paste All Allotments</h2>
+    <p id="pasteHint">Paste the values in school order. One value per line is enough. You can also paste two columns (MDM and BV) from a spreadsheet.</p>
+    <textarea id="pasteArea" placeholder="Example:
+5.712
+5.790
+5.664
+..."></textarea>
+    <div class="pastecount" id="pasteCount">0 values detected</div>
+    <div class="row">
+      <button class="danger" onclick="closePaste()">Cancel</button>
+      <button class="primary" onclick="applyPaste()">Fill & Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUARTER_NAMES={Q1:"Jan / Feb / Mar",Q2:"Apr / May / Jun",Q3:"July / Aug / Sept",Q4:"Oct / Nov / Dec"};
+const DEFAULT_LP=[
+{n:"RASHTRA BHASHA DEEP VID LPS",m:5.712,b:0},{n:"NATUN AMOLAPATTY BALIKA LPS",m:5.790,b:1.742},{n:"VICTORIA H.S. SCHOOL",m:5.664,b:1.830},{n:"DIGHALI BAZAR LPS",m:5.048,b:1.420},{n:"SANTIPARA BENGALI HIGH SCHOOL",m:2.652,b:.598},{n:"SANTIPARA HORIZON LPS",m:.324,b:0},{n:"NO.1 PURNANANDA ROAD ADARSHA LPS",m:5.314,b:.694},{n:"BANI SADAN MES",m:.414,b:.046},{n:"DIBRUGARH BENGALI HIGH SCHOOL",m:1.372,b:.138},{n:"NIRMALI GIRLS' HIGH SCHOOL",m:3.036,b:.742},{n:"DAKHIN JALAN MILAN LPS",m:2.902,b:.276},{n:"DAKHIN JALAN MOHANBARI LPS",m:.926,b:0},{n:"CHIRING GAON RLY COLONY LPS",m:1.514,b:.138},{n:"CHIRING GAON LPS",m:.830,b:.046},{n:"NEPALI HINDI LPS",m:1.114,b:.092},{n:"AMOLAPATTY MVS",m:4.342,b:.306},{n:"AMOLAPATTY HORIZON HINDI LPS",m:.784,b:.278},{n:"AMOLAPATTY JUNIOR BASIC LPS",m:6.966,b:.876},{n:"ANKUR BENGALI LPS",m:.918,b:.046},{n:"JEOTI MOROL MES",m:1.428,b:.138},{n:"CHAPORIWARD HARIZON LPS",m:.880,b:0},{n:"ETHELWOOD TE LPS",m:1.528,b:0},{n:"MAIJAN LPS",m:3.768,b:.366},{n:"AMBEDKAR HINDI LPS",m:.876,b:0},{n:"BARBARI LPS",m:1,b:0},{n:"KHALIHAMARI ASSAMESE LPS",m:2.728,b:0},{n:"POLICE RESERVE LPS",m:1.440,b:0},{n:"NO.1 TINKUNIA A.NB. BALIKA BID",m:4.122,b:1.288},{n:"SRI LAXMIMANDIR GANDHI A. MES",m:1.798,b:0},{n:"GRAHAMBAZAR BOYS LPS",m:4.064,b:0},{n:"GABHARU PATHER LPS",m:4.392,b:1.014},{n:"NALIAPOOL BENGALI HIGH SCHOOL",m:1.442,b:.184},{n:"LAXMINATH BEZBARUAH R.H.S. SADAN",m:1.620,b:.138},{n:"NAVAJYOTI HINDI LPS",m:1.482,b:.138},{n:"RASTRIYA HINDI SIKSHA SADAN",m:.148,b:.046},{n:"DAKHIN JALAN NAGAR TE LPS",m:1.190,b:.184},{n:"KODAMONI LPS",m:2.082,b:.274},{n:"SRI SANKARDEV LPS",m:3.190,b:.874},{n:"MADHAB DEV LPS",m:2.126,b:.138},{n:"SAGAR SMRITI VIDYA MANDIR MES",m:1.056,b:0},{n:"PALTAN BAZAR LPS",m:6.922,b:1.288},{n:"SRI DURGA MANDIR HINDI VIDYALA",m:7.632,b:1.124},{n:"JALANNAGAR REFUGEE MES",m:1.510,b:.490},{n:"DR B.R.AMBEDKAR BALIKA VIDYALA",m:2.888,b:.506},{n:"DIBRUGARH RAILWAY HE SCHOOL",m:.278,b:.046},{n:"PASCHIM GABHARUPATHER LPS",m:.734,b:0},{n:"PUB CHOWKIDINGEE LPS",m:1.154,b:.138}];
+const DEFAULT_UP=[
+{n:"B.N.P H.S SCHOOL",m:6.112,b:0},{n:"VICTORIA H.S. SCHOOL",m:4.804,b:0},{n:"SURAJMAL JALAN BALIKA SHIKSHA SADAN",m:14.194,b:0},{n:"SANTIPARA BENGALI HIGH SCHOOL",m:4.720,b:0},{n:"N.C. HIGH SCHOOL",m:8.384,b:0},{n:"BANI SADAN MES",m:.554,b:0},{n:"DIBRUGARH BENGALI HIGH SCHOOL",m:2.830,b:0},{n:"GRAHAM BAZAR GIRLS HIGH SCHOOL",m:13.028,b:0},{n:"GRAHAM BAZAR BOYS HIGH SCHOOL",m:7.536,b:0},{n:"NIRMALI GIRLS' HIGH SCHOOL",m:8.280,b:0},{n:"GOVT. BOYS H.S. SCHOOL",m:13.880,b:0},{n:"AMOLAPATTY MVS",m:5.442,b:0},{n:"AMOLAPATTY GIRLS HIGH SCHOOL",m:4.508,b:0},{n:"JEOTI MOROL MES",m:2.490,b:0},{n:"GOVT GIRLS HS",m:19.400,b:0},{n:"BARBARI AMC MES",m:4.238,b:0},{n:"BARBARI RAILWAY MES",m:6.650,b:0},{n:"SRI LAXMIMANDIR GANDHI A. MES",m:2.684,b:0},{n:"NALIAPOOL BENGALI HIGH SCHOOL",m:4.754,b:0},{n:"SAGAR SMRITI VIDYA MANDIR MES",m:2.908,b:0},{n:"JYOTINAGAR MARWARI HINDI MES",m:3.466,b:0},{n:"SRI DURGA MANDIR HINDI MES",m:8.396,b:0},{n:"PALTAN BAZAR MES",m:3.974,b:0},{n:"JALANNAGAR REFUGEE MES",m:4.646,b:0},{n:"DIBRUGARH RAILWAY HE SCHOOL",m:.348,b:0}];
+
+let tab="lp",year=new Date().getFullYear().toString(),quarter="Q4",edit=false;
+function load(k){try{const v=JSON.parse(localStorage.getItem(k)||"{}");return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch(e){return{}}}
+let allot=load("dwccs_allot_v5"),coll=load("dwccs_coll_v5");
+const data=()=>tab==="lp"?DEFAULT_LP:DEFAULT_UP;
+function qNow(){let m=new Date().getMonth();return m<3?"Q1":m<6?"Q2":m<9?"Q3":"Q4"}
+quarter=qNow();
+const nowY=new Date().getFullYear(),ysel=document.getElementById("year");
+for(let y=2026;y<=Math.max(2030,nowY+1);y++)ysel.add(new Option(y,y));
+year=String(Math.max(2026,nowY));ysel.value=year;
+function keyObj(root){return root?.[tab]?.[year]?.[quarter]||{}}
+function getAllot(name){
+ let x=keyObj(allot)[name]; if(x)return{m:+x.m||0,b:+x.b||0};
+ if(year==="2026"&&quarter==="Q3"){let x=data().find(s=>s.n===name);return x?{m:x.m,b:x.b}:{m:0,b:0}}
+ return {m:0,b:0}
+}
+function isCollected(name){return !!keyObj(coll)[name]}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/'/g,"&#39;")}
+function save(){try{localStorage.setItem("dwccs_allot_v5",JSON.stringify(allot));localStorage.setItem("dwccs_coll_v5",JSON.stringify(coll))}catch(e){toast("Could not save - storage blocked or full",true)}}
+function updateHeader(){
+ document.getElementById("period").textContent=QUARTER_NAMES[quarter]+" "+year;
+ document.querySelectorAll(".q button").forEach(x=>x.classList.toggle("active",x.dataset.q===quarter));
+ document.getElementById("lpTab").classList.toggle("active",tab==="lp");document.getElementById("upTab").classList.toggle("active",tab==="up");
+}
+function summary(){
+ let a=0,c=0,n=0;data().forEach(s=>{let x=getAllot(s.n),t=Math.round((x.m+x.b)*1000);a+=t;if(isCollected(s.n)){c+=t;n++}});
+ let p=data().length?Math.round(n/data().length*100):0;
+ allotted.textContent=(a/1000).toFixed(3);collected.textContent=(c/1000).toFixed(3);remaining.textContent=((a-c)/1000).toFixed(3);
+ count.textContent=`${n} of ${data().length} collected`;pct.textContent=p+"%";fill.style.width=p+"%";
+}
+function render(){
+ if(edit)grabDraft();updateHeader();let query=search.value.trim().toLowerCase();list.innerHTML="";
+ let arr=data().map((s,i)=>({s,i})).filter(x=>x.s.n.toLowerCase().includes(query));
+ if(!arr.length){list.innerHTML='<div class="empty"><b>No schools found</b>Try another search.</div>';summary();return}
+ arr.forEach(({s,i})=>{
+  let x=getAllot(s.n),taken=isCollected(s.n),bv=x.b?x.b.toFixed(3):"—";
+  let card=document.createElement("div");card.className=`school ${taken?"taken":""} ${edit?"editing":""}`;
+  card.innerHTML=`<div class="num">${i+1}</div><div class="info"><div class="name">${esc(s.n)}</div>
+  <div class="details">MDM <b>${x.m.toFixed(3)}</b> · BV <b>${bv}</b> · Total <b>${(x.m+x.b).toFixed(3)}</b></div>
+  <div class="editbox"><input class="mi" type="number" step=".001" value="${edit&&draft[s.n]?draft[s.n].m:x.m}" aria-label="MDM"><input class="bi" type="number" step=".001" value="${edit&&draft[s.n]?draft[s.n].b:x.b}" aria-label="BV"></div></div>
+  <button class="check ${taken?"checked":""}">${taken?"✓":""}</button>`;
+  card.dataset.name=s.n;card.querySelector(".check").onclick=()=>toggle(s.n);list.appendChild(card);
+ });summary();
+}
+function setYear(v){commitEdit();year=v;render()}function setQ(q){commitEdit();quarter=q;render()}function setTab(t){commitEdit();tab=t;search.value="";render()}
+function toggle(name){
+ coll[tab]??={};coll[tab][year]??={};coll[tab][year][quarter]??={};
+ coll[tab][year][quarter][name]=!coll[tab][year][quarter][name];save();render();toast(coll[tab][year][quarter][name]?"Collection marked":"Collection unmarked");
+}
+let draft={};
+const r3=v=>Math.round(v*1000)/1000;
+function setEditBtn(){const b=document.getElementById("editBtn");b.textContent=edit?"💾 Save":"✏️ Edit";b.className="action "+(edit?"save":"edit")}
+function grabDraft(){document.querySelectorAll(".school").forEach(c=>{const m=c.querySelector(".mi"),b=c.querySelector(".bi");if(m&&b)draft[c.dataset.name]={m:m.value,b:b.value}})}
+function commitEdit(){
+ if(!edit)return;
+ grabDraft();
+ allot[tab]??={};allot[tab][year]??={};allot[tab][year][quarter]??={};
+ for(const [n,d] of Object.entries(draft))allot[tab][year][quarter][n]={m:r3(Math.max(0,parseFloat(d.m)||0)),b:r3(Math.max(0,parseFloat(d.b)||0))};
+ draft={};edit=false;setEditBtn();save();
+}
+function toggleEdit(){
+ if(!edit){edit=true;draft={};setEditBtn();render();return}
+ commitEdit();render();toast("Allotment saved");
+}
+function toast(msg,err){let t=document.getElementById("toast");t.textContent=(err?"⚠ ":"✓ ")+msg;t.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove("show"),err?2600:1400)}
+let imgBusy=false;
+async function saveAsImage(){
+ if(imgBusy)return;
+ if(typeof html2canvas==="undefined"){toast("Image tool not loaded (needs internet once)",true);return}
+ imgBusy=true;commitEdit();
+ const oldSearch=search.value;search.value="";render();
+ window.scrollTo(0,0);
+ document.getElementById("period").textContent=tab.toUpperCase()+" · "+QUARTER_NAMES[quarter]+" "+year;
+ document.body.classList.add("capture-mode");
+ toast("Creating image…");
+ try{
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  const area=document.getElementById("captureArea");
+  const canvas=await html2canvas(area,{backgroundColor:"#fff",scale:3,logging:false,scrollX:0,scrollY:0,width:area.scrollWidth});
+  const fname=`DWCCS_${tab.toUpperCase()}_${year}_${quarter}.png`;
+  const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+  const file=new File([blob],fname,{type:"image/png"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]})}
+  else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+  toast("Image ready");
+ }catch(e){if(!e||e.name!=="AbortError")toast("Could not save image",true)}
+ finally{document.body.classList.remove("capture-mode");search.value=oldSearch;imgBusy=false;render()}
+}
+function openPaste(){
+  commitEdit();render();
+  const total=data().length;
+  document.getElementById("pasteHint").textContent=
+    `Paste ${total} rows in school order: one column (MDM) or two columns (MDM, BV) from a spreadsheet. Blank BV cells are fine.`;
+  const area=document.getElementById("pasteArea");
+  area.value="";
+  updatePasteCount();
+  document.getElementById("pasteModal").classList.add("show");
+  setTimeout(()=>area.focus(),80);
+}
+function closePaste(){document.getElementById("pasteModal").classList.remove("show")}
+function cellVal(c){c=c.trim();if(c===""||/^[—–-]$/.test(c))return 0;return /^\d*\.?\d+$/.test(c)?parseFloat(c):NaN}
+function parsePaste(text){
+ const L=text.replace(/\r/g,"").split("\n");
+ while(L.length&&!L[L.length-1].trim())L.pop();
+ while(L.length&&!L[0].trim())L.shift();
+ const rows=L.map(l=>(l.includes("\t")?l.split("\t"):l.trim().split(/[;\s]+/)).map(cellVal));
+ if(rows.length>1&&rows[0].some(Number.isNaN)&&rows.slice(1).every(r=>r.every(Number.isFinite)))rows.shift();
+ return rows;
+}
+function updatePasteCount(){
+ const rows=parsePaste(document.getElementById("pasteArea").value),cols=rows.length?Math.max(...rows.map(r=>r.length)):0;
+ document.getElementById("pasteCount").textContent=`${rows.length} row${rows.length===1?"":"s"} × ${cols} column${cols===1?"":"s"} detected`;
+}
+document.getElementById("pasteArea").addEventListener("input",updatePasteCount);
+function applyPaste(){
+ const rows=parsePaste(document.getElementById("pasteArea").value),total=data().length;
+ if(!rows.length||(rows.length===1&&!rows[0].length)){toast("Paste some numbers first",true);return}
+ const cols=Math.max(...rows.map(r=>r.length));
+ if(cols>2){toast("Max 2 columns: MDM, BV",true);return}
+ if(rows.some(r=>r.some(v=>!Number.isFinite(v)||v<0))){toast("Only positive numbers allowed",true);return}
+ const stacked=cols===1&&rows.length===total*2;
+ if(rows.length!==total&&!stacked){toast(`Need ${total} rows, got ${rows.length}`,true);return}
+ if(!confirm(`Overwrite ${tab.toUpperCase()} allotments for ${QUARTER_NAMES[quarter]} ${year}?`))return;
+ allot[tab]??={};allot[tab][year]??={};allot[tab][year][quarter]??={};
+ data().forEach((s,i)=>{
+  const old=getAllot(s.n),m=r3(rows[i][0]);
+  const b=stacked?r3(rows[total+i][0]):(cols===2?r3(rows[i][1]??0):old.b);
+  allot[tab][year][quarter][s.n]={m,b};
+ });
+ save();closePaste();render();toast(`${tab.toUpperCase()} ${total} allotments filled`);
+}
+function openInfo(){modal.classList.add("show")}function closeInfo(){modal.classList.remove("show")}
+function clearCurrent(){
+ if(confirm("Reset "+tab.toUpperCase()+" allotments and collection for "+QUARTER_NAMES[quarter]+" "+year+"?")){
+  allot[tab]??={};allot[tab][year]??={};
+  if(year==="2026"&&quarter==="Q3"){const z={};data().forEach(s=>z[s.n]={m:0,b:0});allot[tab][year][quarter]=z}
+  else delete allot[tab][year][quarter];
+  if(coll[tab]?.[year])delete coll[tab][year][quarter];
+  save();closeInfo();render();toast("Current quarter reset");
+ }
+}
+render();
+</script>
+</body>
+</html>
